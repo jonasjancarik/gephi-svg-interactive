@@ -1,0 +1,14 @@
+{
+  "name": "gephi-svg-interactive",
+  "version": "0.1",
+  "description": "jQuery plugin to add interactivity to Gephi SVG exports",
+  "main": "dist/gephi-svg-interactive.min.js",
+  "author": "jonas.jancarik@gmail.com",
+  "license": "MIT",
+  "devDependencies": {
+    "uglify-js": "^3.4.3"
+  },
+  "scripts": {
+    "build": "uglifyjs src/gephi-svg-interactive.js -o dist/gephi-svg-interactive.min.js"
+  }
+}

@@ -1,0 +1,38 @@
+        .column-legend h2 {
+            border-top: 3px solid #000;
+            padding-top: 0.25em
+        }
+
+        .font-size-range {
+            top: 5px;
+            position: relative
+        }
+
+
+        .column-scroll-space {
+            background-color: rgb(231, 231, 231);
+            transition: background-color 0.3s
+        }
+
+        .column-scroll-space:hover {
+            background-color: rgb(180, 180, 180)
+        }
+
+        .svg-gephi-interactive {
+            width: 100%;
+            height: 100vh
+        }
+
+        .svg-gephi-interactive text {
+            font-family: inherit
+        }
+
+        .svg-gephi-interactive #edges path,
+        .svg-gephi-interactive #nodes circle,
+        .svg-gephi-interactive #node-labels text {
+            cursor: pointer
+        }
+
+        .svg-gephi-interactive #node-labels text:hover {
+            font-weight: bold
+        }

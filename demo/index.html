@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+
+    <!-- Interactive SVG styling -->
+    <link rel="stylesheet" href="css/styles.css">
+
+    <title>Gephi Interactive SVG Demo</title>
+
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h1>Gephi Interactive SVG Demo</h1>
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+        <div class="row">
+            <div class="col">
+                <img src="img/les-miserables.svg" alt="" class="svg" id="visualisation_1">
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+        <div class="row">
+            <div class="col">
+                <img src="img/les-miserables.svg" alt="" class="svg" id="visualisation_2">
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+    </div>
+    <!-- /.container -->
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/svg-injector@1.1.3/svg-injector.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3/dist/svg-pan-zoom.min.js"></script>
+
+    <!-- Our plugin -->
+    <script src="../src/gephi-svg-interactive.js"></script>
+
+    <script>
+
+        // Inline SVGs from <img> sources:
+        SVGInjector($('.svg'), {
+
+            each: function (svg) { // callback for each inlined SVG
+
+                // add interactivity
+                $(svg).gephiSvgInteractive({
+                    class: 'svg-gephi-interactive', // class to applied to each interactive SVG
+                    cursor: 'crosshair'
+                })
+
+                // Optional - SVG Pan and Zoom functionality:
+                svgPanZoom('#' + $(svg).attr('id'), {
+                    zoomEnabled: true,
+                    controlIconsEnabled: true,
+                    fit: true,
+                    center: true
+                })
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
