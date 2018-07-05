@@ -9,6 +9,6 @@
     "uglify-js": "^3.4.3"
   },
   "scripts": {
-    "build": "uglifyjs src/gephi-svg-interactive.js -o dist/gephi-svg-interactive.min.js && cp src/gephi-svg-interactive.js dist/gephi-svg-interactive.js"
+    "build": "cp src/gephi-svg-interactive.js dist/gephi-svg-interactive.js && uglifyjs src/gephi-svg-interactive.js -o dist/gephi-svg-interactive.min.js"
   }
 }
