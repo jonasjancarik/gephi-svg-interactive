@@ -6,8 +6,8 @@ Include `dist/gephi-svg-interactive.js` or the minified version `dist/gephi-svg-
 
 ```javascript
 $(yourSvgElement).gephiSvgInteractive({
-    class: 'svg-gephi-interactive', // class to apply to each interactive SVG. Default: N/A (will not add class)
-    cursor: 'crosshair' // cursor type to be desplayed when hovering over active elements. Default: 'pointer'
+    class: 'svg-gephi-interactive', // class to apply to each interactive SVG. Default: null (will not add class)
+    cursor: 'crosshair' // cursor type to be displayed when hovering over active elements. Default: 'pointer'
 })
 ```
 

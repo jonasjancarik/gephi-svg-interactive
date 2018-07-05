@@ -6,6 +6,7 @@
 
             // Default options
             var optionsDefault = {
+                class: null,
                 cursor: 'pointer'
             }
 
