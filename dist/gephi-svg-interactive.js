@@ -7498,22 +7498,30 @@ var plugins = [CSSPlugin, Draggable]; // prevent tree shaking
 
           // if the click is on an edge path
           if (target.is('#edges path')) {
+            // get the class of the path - refers to the linked nodes
+            var classNames = target.attr('class').split(' ')
+
+            // lower opacity of everything
+            target.parents('svg').find('path,circle,text').css('opacity', '0.1')
+
             // (re)set clicked path to full opacity
             target.css('opacity', '1')
-            // lower the opacity of all other egde paths
-            target.siblings().each(function () {
-              $(this).css('opacity', '0.1')
+
+            classNames.forEach(function (className) {
+              target.parents('svg').find('#nodes .' + className + ', #node-labels .' + className).css('opacity', '1')
             })
           } else if (target.is('#node-labels text') || target.is('#nodes circle')) { // if a label or a node itself was clicked
             // get the ID of the node - this is the same as the label field in Gephi
             var nodeId = target.attr('class')
-            // (re)set paths linked to the clicked node (they will have the node ID as a class) to full opacity
-            target.parents('svg').find('#edges path.' + nodeId).css('opacity', '1')
-            // lower the opacity of other paths
-            target.parents('svg').find('#edges path').not('.' + nodeId).css('opacity', '0.1')
+
+            // lower opacity of everything
+            target.parents('svg').find('path,circle,text').css('opacity', '0.1')
+
+            // (re)set paths linked to the clicked node (they will have the node ID as a class) and the node itself to full opacity
+            target.parents('svg').find('#edges path.' + nodeId + ', #nodes circle.' + nodeId + ', #node-labels text.' + nodeId).css('opacity', '1')
           }
         } else { // reset the view
-          $(this).find('path').css('opacity', '1')
+          $(this).find('path, circle, text').css('opacity', '1')
         }
       })
     })
