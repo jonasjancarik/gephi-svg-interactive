@@ -1,61 +1,152 @@
-(function ($) {
+// var Snap = require('snapsvg');
+// import Draggable from 'gsap/Draggable';
+var CSSPlugin = require('gsap/umd/CSSPlugin')
+var Draggable = require('gsap/umd/Draggable')
 
-    $.fn.gephiSvgInteractive = function (options) {
+var plugins = [CSSPlugin, Draggable]; // prevent tree shaking
 
-        return this.each(function () {
+(function (factory) {
+  if (typeof module === 'object' && typeof module.exports === 'object') {
+    factory(require('jquery'), window, document)
+  } else {
+    factory(jQuery, window, document)
+  }
+}(function ($, window, document, undefined) {
+  $.fn.gephiSvgInteractive = function (options) {
+    return this.each(function () {
+      // Default options
+      var optionsDefault = {
+        class: null,
+        cursor: 'pointer'
+      }
 
-            // Default options
-            var optionsDefault = {
-                class: null,
-                cursor: 'pointer'
-            }
+      // apply defaults where options were not set
+      Object.keys(optionsDefault).forEach(function (option) {
+        if (!options[option]) {
+          options.option = optionsDefault[option]
+        }
+      })
 
-            // applied defaults where options were not set
-            Object.keys(optionsDefault).forEach(function (option) {
-                if (!options[option]) {
-                    options.option = optionsDefault[option]
-                }
-            });
+      options.class ? $(this).addClass(options.class) : null
+      options.cursor ? $(this).find('#edges path, #nodes circle, #node-labels text').css('cursor', options.cursor) : null
 
-            options.class ? $(this).addClass(options.class) : null
-            options.cursor ? $(this).find('#edges path, #nodes circle, #node-labels text').css('cursor', options.cursor) : null
-           
-            // bind to the click event
-            $(this).bind("click.gephiSvgInteractive", function () {
+      // dragability
 
-                // check if the click was on one of the SVG child elements
-                if (event.target !== this) {
+      // store values in data attributes - origin and target of edges and positions of labels
+      $(this).find('path').each(function () {
+        $(this).attr('data-from', $(this).attr('class').split(' ')[0])
+        $(this).attr('data-to', $(this).attr('class').split(' ')[1])
+      })
+      $(this).find('text').each(function () {
+        $(this).attr('data-x-original', $(this).attr('x'))
+        $(this).attr('data-y-original', $(this).attr('y'))
+      })
 
-                    // set the clicked element as the target
-                    var target = $(event.target)
+      Draggable.create('text', { // todo: circle dragging doesn't work correctly if previously dragged by label. Attempted fix by saving offset in data-
+        // bounds: thisId, // commented out as this causes all circles to be placed in the top left corner. Todo: investigate
+        onDragStart: function () {
+          var target = this.target
+          $(this.target.nearestViewportElement).find('circle.' + target.classList[0]).each(function () {
+            $(this).attr('data-transform', $(this).attr('transform'))
+          })
+        },
+        onDrag: function () {
+          var target = this.target
 
-                    // if the click is on an edge path
-                    if (target.is('#edges path')) {
-                        // (re)set clicked path to full opacity
-                        target.css('opacity', '1')
-                        // lower the opacity of all other egde paths
-                        target.siblings().each(function () {
-                            $(this).css('opacity', '0.1')
-                        })
-                    }
-                    // if a label or a node itself was clicked
-                    else if (target.is('#node-labels text') || target.is('#nodes circle')) {
-                        // get the ID of the node - this is the same as the label field in Gephi
-                        var nodeId = target.attr('class')
-                        // (re)set paths linked to the clicked node (they will have the node ID as a class) to full opacity
-                        target.parents('svg').find('#edges path.' + nodeId).css('opacity', '1')
-                        // lower the opacity of other paths
-                        target.parents('svg').find('#edges path').not('.' + nodeId).css('opacity', '0.1')
-                    }
+          var xOffset = Number(this.x)
+          var yOffset = Number(this.y)
 
-                } else {  // reset the view
-                    $(this).find('path').css('opacity', '1')
-                }
+          if (this.target.tagName === 'circle') {
+            var xBase = Number(target.attributes.cx.value)
+            var yBase = Number(target.attributes.cy.value)
 
-            });
+            $(this.target.nearestViewportElement).find('path[data-from=' + target.classList[0] + ']').each(function () {
+              var dArray = $(this).first().attr('d').split(' ')
+              var newX = xBase + xOffset
+              var newY = yBase + yOffset
+              dArray[1] = newX + ',' + newY
+              $(this).attr('d', dArray.join(' '))
+            })
 
-        })
+            $(this.target.nearestViewportElement).find('path[data-to=' + target.classList[0] + ']').each(function () {
+              var dArray = $(this).first().attr('d').split(' ')
+              var newX = xBase + xOffset
+              var newY = yBase + yOffset
+              dArray[5] = newX + ',' + newY
+              $(this).attr('d', dArray.join(' '))
+            })
 
-    };
+            $(this.target.nearestViewportElement).find('text.' + target.classList[0]).each(function () {
+              var newX = xOffset + Number($(this).attr('data-x-original'))
+              var newY = yOffset + Number($(this).attr('data-y-original'))
+              $(this).attr('x', newX)
+              $(this).attr('y', newY)
+            })
 
-})(jQuery);
+            // correct self - todo: fix. Circle offset changes if dragged first by label
+            $(this.target.nearestViewportElement).find('circle.' + target.classList[0]).each(function () {
+              if ($(this).attr('data-transform')) {
+                var newXoffset = Number($(this).attr('data-transform').split(',')[4]) + xOffset
+                var newYoffset = Number($(this).attr('data-transform').split(',')[5].replace(')', '')) + yOffset
+                $(this).attr('transform', 'matrix(1,0,0,1,' + newXoffset + ',' + newYoffset + ')')
+              }
+            })
+          } else if (this.target.tagName === 'text') {
+            xBase = Number($(this.target.nearestViewportElement).find('circle.' + target.classList[0]).attr('cx'))
+            yBase = Number($(this.target.nearestViewportElement).find('circle.' + target.classList[0]).attr('cy'))
+
+            $(this.target.nearestViewportElement).find('path[data-from=' + target.classList[0] + ']').each(function () {
+              var dArray = $(this).first().attr('d').split(' ')
+              var newX = xBase + xOffset
+              var newY = yBase + yOffset
+              dArray[1] = newX + ',' + newY
+              $(this).attr('d', dArray.join(' '))
+            })
+
+            $(this.target.nearestViewportElement).find('path[data-to=' + target.classList[0] + ']').each(function () {
+              var dArray = $(this).first().attr('d').split(' ')
+              var newX = xBase + xOffset
+              var newY = yBase + yOffset
+              dArray[5] = newX + ',' + newY
+              $(this).attr('d', dArray.join(' '))
+            })
+
+            $(this.target.nearestViewportElement).find('circle.' + target.classList[0]).each(function () {
+              // var newXoffset = Number($(this).attr('transform').split(',')[4]) + xOffset
+              // var newYoffset = Number($(this).attr('transform').split(',')[5].replace(')', '')) + yOffset
+              $(this).attr('transform', 'matrix(1,0,0,1,' + xOffset + ',' + yOffset + ')')
+            })
+          }
+        }
+      })
+
+      // bind to the click event
+      $(this).bind('click.gephiSvgInteractive', function () {
+        // check if the click was on one of the SVG child elements
+        if (event.target !== this) {
+          // set the clicked element as the target
+          var target = $(event.target)
+
+          // if the click is on an edge path
+          if (target.is('#edges path')) {
+            // (re)set clicked path to full opacity
+            target.css('opacity', '1')
+            // lower the opacity of all other egde paths
+            target.siblings().each(function () {
+              $(this).css('opacity', '0.1')
+            })
+          } else if (target.is('#node-labels text') || target.is('#nodes circle')) { // if a label or a node itself was clicked
+            // get the ID of the node - this is the same as the label field in Gephi
+            var nodeId = target.attr('class')
+            // (re)set paths linked to the clicked node (they will have the node ID as a class) to full opacity
+            target.parents('svg').find('#edges path.' + nodeId).css('opacity', '1')
+            // lower the opacity of other paths
+            target.parents('svg').find('#edges path').not('.' + nodeId).css('opacity', '0.1')
+          }
+        } else { // reset the view
+          $(this).find('path').css('opacity', '1')
+        }
+      })
+    })
+  }
+}))

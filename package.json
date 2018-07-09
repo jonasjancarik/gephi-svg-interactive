@@ -2,13 +2,44 @@
   "name": "gephi-svg-interactive",
   "version": "0.0.1",
   "description": "jQuery plugin to add interactivity to Gephi SVG exports",
-  "main": "dist/gephi-svg-interactive.min.js",
+  "keywords": [
+    "jquery-plugin",
+    "ecosystem:jquery"
+  ],
+  "main": "src/gephi-svg-interactive.js",
   "author": "jonas.jancarik@gmail.com",
   "license": "MIT",
+  "bugs": "https://github.com/jonasjancarik/gephi-svg-interactive/issues",
   "devDependencies": {
+    "browserify": "^16.2.2",
+    "browserify-shim": "^3.8.14",
+    "eslint": "^5.1.0",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.13.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-standard": "^3.1.0",
+    "npm-watch": "^0.3.0",
     "uglify-js": "^3.4.3"
   },
+  "watch": {
+    "browserify": "src/*.js"
+  },
   "scripts": {
-    "build": "cp src/gephi-svg-interactive.js dist/gephi-svg-interactive.js && uglifyjs src/gephi-svg-interactive.js -o dist/gephi-svg-interactive.min.js"
+    "build": "browserify src/gephi-svg-interactive.js > dist/gephi-svg-interactive.js && uglifyjs dist/gephi-svg-interactive.js -o dist/gephi-svg-interactive.min.js",
+    "browserify": "browserify src/gephi-svg-interactive.js --debug > dist/gephi-svg-interactive.js",
+    "watch": "npm-watch"
+  },
+  "dependencies": {
+    "gsap": "^2.0.1",
+    "jquery": "^3.3.1"
+  },
+  "browserify": {
+    "transform": [
+      "browserify-shim"
+    ]
+  },
+  "browserify-shim": {
+    "jquery": "global:$"
   }
 }
