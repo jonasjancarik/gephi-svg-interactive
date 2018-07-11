@@ -1,17 +1,18 @@
-// var Snap = require('snapsvg');
-// import Draggable from 'gsap/Draggable';
+/* eslint-env browser */
 var CSSPlugin = require('gsap/umd/CSSPlugin')
 var Draggable = require('gsap/umd/Draggable')
+var TweenLite = require('gsap/umd/TweenLite')
 
-var plugins = [CSSPlugin, Draggable]; // prevent tree shaking
+// prevent Webpack tree shaking
+var GSAPplugins = [CSSPlugin, Draggable, TweenLite]; // eslint-disable-line no-unused-vars
 
 (function (factory) {
   if (typeof module === 'object' && typeof module.exports === 'object') {
     factory(require('jquery'), window, document)
   } else {
-    factory(jQuery, window, document)
+    factory(jQuery, window, document) // eslint-disable-line no-undef
   }
-}(function ($, window, document, undefined) {
+}(function ($, window, document) {
   $.fn.gephiSvgInteractive = function (options) {
     return this.each(function () {
       // Default options
@@ -27,10 +28,17 @@ var plugins = [CSSPlugin, Draggable]; // prevent tree shaking
         }
       })
 
-      options.class ? $(this).addClass(options.class) : null
-      options.cursor ? $(this).find('#edges path, #nodes circle, #node-labels text').css('cursor', options.cursor) : null
+      // apply supplied options
+      options.class && $(this).addClass(options.class)
+      options.cursor && $(this).find('#edges path, #nodes circle, #node-labels text').css('cursor', options.cursor)
 
-      // dragability
+      // ===========
+      // Dragability
+      // ===========
+
+      // initialise tweenlite properties
+      TweenLite.set('circle', { x: '+=0' })
+      TweenLite.set('text', { x: '+=0' })
 
       // store values in data attributes - origin and target of edges and positions of labels
       $(this).find('path').each(function () {
@@ -41,94 +49,112 @@ var plugins = [CSSPlugin, Draggable]; // prevent tree shaking
         $(this).attr('data-x-original', $(this).attr('x'))
         $(this).attr('data-y-original', $(this).attr('y'))
       })
+      $(this).find('circle').each(function () {
+        $(this).attr('data-x-original', $(this).attr('cx'))
+        $(this).attr('data-y-original', $(this).attr('cy'))
+      })
 
-      Draggable.create('text', { // todo: circle dragging doesn't work correctly if previously dragged by label. Attempted fix by saving offset in data-
-        // bounds: thisId, // commented out as this causes all circles to be placed in the top left corner. Todo: investigate
-        onDragStart: function () {
-          var target = this.target
-          $(this.target.nearestViewportElement).find('circle.' + target.classList[0]).each(function () {
-            $(this).attr('data-transform', $(this).attr('transform'))
-          })
-        },
+      Draggable.create('text', {
         onDrag: function () {
-          var target = this.target
-
-          var xOffset = Number(this.x)
-          var yOffset = Number(this.y)
-
-          if (this.target.tagName === 'circle') {
-            var xBase = Number(target.attributes.cx.value)
-            var yBase = Number(target.attributes.cy.value)
-
-            $(this.target.nearestViewportElement).find('path[data-from=' + target.classList[0] + ']').each(function () {
-              var dArray = $(this).first().attr('d').split(' ')
-              var newX = xBase + xOffset
-              var newY = yBase + yOffset
-              dArray[1] = newX + ',' + newY
-              $(this).attr('d', dArray.join(' '))
-            })
-
-            $(this.target.nearestViewportElement).find('path[data-to=' + target.classList[0] + ']').each(function () {
-              var dArray = $(this).first().attr('d').split(' ')
-              var newX = xBase + xOffset
-              var newY = yBase + yOffset
-              dArray[5] = newX + ',' + newY
-              $(this).attr('d', dArray.join(' '))
-            })
-
-            $(this.target.nearestViewportElement).find('text.' + target.classList[0]).each(function () {
-              var newX = xOffset + Number($(this).attr('data-x-original'))
-              var newY = yOffset + Number($(this).attr('data-y-original'))
-              $(this).attr('x', newX)
-              $(this).attr('y', newY)
-            })
-
-            // correct self - todo: fix. Circle offset changes if dragged first by label
-            $(this.target.nearestViewportElement).find('circle.' + target.classList[0]).each(function () {
-              if ($(this).attr('data-transform')) {
-                var newXoffset = Number($(this).attr('data-transform').split(',')[4]) + xOffset
-                var newYoffset = Number($(this).attr('data-transform').split(',')[5].replace(')', '')) + yOffset
-                $(this).attr('transform', 'matrix(1,0,0,1,' + newXoffset + ',' + newYoffset + ')')
-              }
-            })
-          } else if (this.target.tagName === 'text') {
-            xBase = Number($(this.target.nearestViewportElement).find('circle.' + target.classList[0]).attr('cx'))
-            yBase = Number($(this.target.nearestViewportElement).find('circle.' + target.classList[0]).attr('cy'))
-
-            $(this.target.nearestViewportElement).find('path[data-from=' + target.classList[0] + ']').each(function () {
-              var dArray = $(this).first().attr('d').split(' ')
-              var newX = xBase + xOffset
-              var newY = yBase + yOffset
-              dArray[1] = newX + ',' + newY
-              $(this).attr('d', dArray.join(' '))
-            })
-
-            $(this.target.nearestViewportElement).find('path[data-to=' + target.classList[0] + ']').each(function () {
-              var dArray = $(this).first().attr('d').split(' ')
-              var newX = xBase + xOffset
-              var newY = yBase + yOffset
-              dArray[5] = newX + ',' + newY
-              $(this).attr('d', dArray.join(' '))
-            })
-
-            $(this.target.nearestViewportElement).find('circle.' + target.classList[0]).each(function () {
-              // var newXoffset = Number($(this).attr('transform').split(',')[4]) + xOffset
-              // var newYoffset = Number($(this).attr('transform').split(',')[5].replace(')', '')) + yOffset
-              $(this).attr('transform', 'matrix(1,0,0,1,' + xOffset + ',' + yOffset + ')')
-            })
-          }
+          // when a label (text element) is dragged, linked elements (the node and linked edges) will be moved too using the moveCompanions function
+          moveCompanions(selectCompanions(this), this)
         }
       })
 
-      // bind to the click event
+      function selectCompanions (draggedObject) {
+        var companionsAll = $('#' + draggedObject.target.nearestViewportElement.id + ' .' + draggedObject.target.classList[0]) // todo: check whether this selects only in the current visualisation
+        var i = companionsAll.length
+        var companions = []
+        while (--i > -1) {
+          if (companionsAll[i] !== draggedObject.target) {
+            companions.push(companionsAll[i])
+          }
+        }
+        return companions
+      }
+
+      function moveCompanions (companions, draggedObject) {
+        // first, get new x and y positions based on the position of the node circle (the label has an offset from the node)
+        var xNew, yNew
+
+        companions.forEach(function (companion) {
+          if (companion.tagName === 'circle') {
+            xNew = Number(companion.attributes.cx.value) + companion._gsTransform.x + draggedObject.deltaX
+            yNew = Number(companion.attributes.cy.value) + companion._gsTransform.y + draggedObject.deltaY
+          }
+        })
+
+        // then go through all companions and move them
+        companions.forEach(function (companion) {
+          if (companion.tagName === 'circle') {
+            // move the node circle
+            TweenLite.set(companion, { x: companion._gsTransform.x + draggedObject.deltaX, y: companion._gsTransform.y + draggedObject.deltaY })
+          } else if (companion.tagName === 'path') {
+            // move edges
+            if (companion.attributes['data-from'].value === draggedObject.target.classList[0]) {
+              // move outcoming edges
+              $(draggedObject.target.nearestViewportElement).find('path[data-from="' + draggedObject.target.classList[0] + '"]').each(function () {
+                var dArray = $(this).attr('d').split(' ')
+                dArray[1] = xNew + ',' + yNew
+                $(this).attr('d', dArray.join(' '))
+              })
+            } else if (companion.attributes['data-to'].value === draggedObject.target.classList[0]) {
+              // move incoming edges
+              $(draggedObject.target.nearestViewportElement).find('path[data-to="' + draggedObject.target.classList[0] + '"]').each(function () {
+                var dArray = $(this).attr('d').split(' ')
+                dArray[5] = xNew + ',' + yNew
+                $(this).attr('d', dArray.join(' '))
+              })
+            }
+          }
+        })
+      }
+
+      Draggable.create('circle', { // todo: circle dragging doesn't work correctly if previously dragged by label. Attempted fix by saving offset in data-
+        // bounds: $('#' + this.id).parent(), // fix: doesn't work with multiple visualisations
+        onDrag: function () {
+          var target = this.target
+
+          var xOffset = this.x
+          var yOffset = this.y
+
+          // get starting position of the node (circle)
+          var xBase = Number(target.attributes.cx.value)
+          var yBase = Number(target.attributes.cy.value)
+
+          $(target.nearestViewportElement).find('circle.' + target.classList[0]).removeAttr('data-moved-by-another')
+
+          $(target.nearestViewportElement).find('path[data-from=' + target.classList[0] + ']').each(function () {
+            var dArray = $(this).first().attr('d').split(' ')
+            dArray[1] = (xBase + xOffset) + ',' + (yBase + yOffset)
+            $(this).attr('d', dArray.join(' '))
+          })
+
+          $(target.nearestViewportElement).find('path[data-to=' + target.classList[0] + ']').each(function () {
+            var dArray = $(this).first().attr('d').split(' ')
+            dArray[5] = (xBase + xOffset) + ',' + (yBase + yOffset)
+            $(this).attr('d', dArray.join(' '))
+          })
+
+          $(target.nearestViewportElement).find('text.' + target.classList[0]).each(function () {
+            TweenLite.set(this, { x: xOffset, y: yOffset })
+          })
+        }
+      })
+
+      // ==============================================
+      // Click events - highlighting parts of the graph
+      // ==============================================
+
       $(this).bind('click.gephiSvgInteractive', function () {
         // check if the click was on one of the SVG child elements
         if (event.target !== this) {
           // set the clicked element as the target
           var target = $(event.target)
 
-          // if the click is on an edge path
           if (target.is('#edges path')) {
+            // if the click is on an edge path
+
             // get the class of the path - refers to the linked nodes
             var classNames = target.attr('class').split(' ')
 
@@ -141,7 +167,9 @@ var plugins = [CSSPlugin, Draggable]; // prevent tree shaking
             classNames.forEach(function (className) {
               target.parents('svg').find('#nodes .' + className + ', #node-labels .' + className).css('opacity', '1')
             })
-          } else if (target.is('#node-labels text') || target.is('#nodes circle')) { // if a label or a node itself was clicked
+          } else if (target.is('#node-labels text') || target.is('#nodes circle')) {
+            // if a label or a node itself was clicked
+
             // get the ID of the node - this is the same as the label field in Gephi
             var nodeId = target.attr('class')
 
@@ -151,7 +179,8 @@ var plugins = [CSSPlugin, Draggable]; // prevent tree shaking
             // (re)set paths linked to the clicked node (they will have the node ID as a class) and the node itself to full opacity
             target.parents('svg').find('#edges path.' + nodeId + ', #nodes circle.' + nodeId + ', #node-labels text.' + nodeId).css('opacity', '1')
           }
-        } else { // reset the view
+        } else {
+          // If clicked anywhere in the empty space, reset the view
           $(this).find('path, circle, text').css('opacity', '1')
         }
       })
