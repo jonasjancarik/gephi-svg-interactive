@@ -45,14 +45,6 @@ var GSAPplugins = [CSSPlugin, Draggable, TweenLite]; // eslint-disable-line no-u
         $(this).attr('data-from', $(this).attr('class').split(' ')[0])
         $(this).attr('data-to', $(this).attr('class').split(' ')[1])
       })
-      $(this).find('text').each(function () {
-        $(this).attr('data-x-original', $(this).attr('x'))
-        $(this).attr('data-y-original', $(this).attr('y'))
-      })
-      $(this).find('circle').each(function () {
-        $(this).attr('data-x-original', $(this).attr('cx'))
-        $(this).attr('data-y-original', $(this).attr('cy'))
-      })
 
       Draggable.create('text', {
         onDrag: function () {
@@ -63,7 +55,18 @@ var GSAPplugins = [CSSPlugin, Draggable, TweenLite]; // eslint-disable-line no-u
 
       function selectCompanions (draggedObject) {
         // todo: support companion groups to move multiple nodes (e.g. same modularity group) at once
-        var companionsAll = $('#' + draggedObject.target.nearestViewportElement.id + ' .' + draggedObject.target.classList[0]) // todo: check whether this selects only in the current visualisation
+        // identifying groups:
+        // var nodeGroups = {}
+        // $('#nodes circle').each(function () {
+
+        //   if (!nodeGroups[$(this).attr('fill')]) {
+        //     nodeGroups[$(this).attr('fill')] = []
+        //   } else {
+        //     nodeGroups[$(this).attr('fill')].push($(this).attr('class'))
+        //   }
+
+        // })
+        var companionsAll = $('#' + draggedObject.target.nearestViewportElement.id + ' .' + draggedObject.target.classList[0])
         var i = companionsAll.length
         var companions = []
         while (--i > -1) {
