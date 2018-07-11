@@ -110,7 +110,7 @@ var GSAPplugins = [CSSPlugin, Draggable, TweenLite]; // eslint-disable-line no-u
         })
       }
 
-      Draggable.create('circle', { // todo: circle dragging doesn't work correctly if previously dragged by label. Attempted fix by saving offset in data-
+      Draggable.create('circle', {
         // bounds: $('#' + this.id).parent(), // fix: doesn't work with multiple visualisations
         onDrag: function () {
           var target = this.target
