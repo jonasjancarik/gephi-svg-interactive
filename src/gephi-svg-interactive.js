@@ -3,7 +3,7 @@ var CSSPlugin = require('gsap/umd/CSSPlugin')
 var Draggable = require('gsap/umd/Draggable')
 var TweenLite = require('gsap/umd/TweenLite')
 
-// prevent Webpack tree shaking
+// prevent Browserify tree shaking
 var GSAPplugins = [CSSPlugin, Draggable, TweenLite]; // eslint-disable-line no-unused-vars
 
 (function (factory) {
@@ -62,6 +62,7 @@ var GSAPplugins = [CSSPlugin, Draggable, TweenLite]; // eslint-disable-line no-u
       })
 
       function selectCompanions (draggedObject) {
+        // todo: support companion groups to move multiple nodes (e.g. same modularity group) at once
         var companionsAll = $('#' + draggedObject.target.nearestViewportElement.id + ' .' + draggedObject.target.classList[0]) // todo: check whether this selects only in the current visualisation
         var i = companionsAll.length
         var companions = []
