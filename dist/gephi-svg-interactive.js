@@ -7372,7 +7372,7 @@ var CSSPlugin = require('gsap/umd/CSSPlugin')
 var Draggable = require('gsap/umd/Draggable')
 var TweenLite = require('gsap/umd/TweenLite')
 
-// prevent Webpack tree shaking
+// prevent Browserify tree shaking
 var GSAPplugins = [CSSPlugin, Draggable, TweenLite]; // eslint-disable-line no-unused-vars
 
 (function (factory) {
@@ -7393,7 +7393,7 @@ var GSAPplugins = [CSSPlugin, Draggable, TweenLite]; // eslint-disable-line no-u
       // apply defaults where options were not set
       Object.keys(optionsDefault).forEach(function (option) {
         if (!options[option]) {
-          options.option = optionsDefault[option]
+          options[option] = optionsDefault[option]
         }
       })
 
@@ -7414,14 +7414,6 @@ var GSAPplugins = [CSSPlugin, Draggable, TweenLite]; // eslint-disable-line no-u
         $(this).attr('data-from', $(this).attr('class').split(' ')[0])
         $(this).attr('data-to', $(this).attr('class').split(' ')[1])
       })
-      $(this).find('text').each(function () {
-        $(this).attr('data-x-original', $(this).attr('x'))
-        $(this).attr('data-y-original', $(this).attr('y'))
-      })
-      $(this).find('circle').each(function () {
-        $(this).attr('data-x-original', $(this).attr('cx'))
-        $(this).attr('data-y-original', $(this).attr('cy'))
-      })
 
       Draggable.create('text', {
         onDrag: function () {
@@ -7431,7 +7423,19 @@ var GSAPplugins = [CSSPlugin, Draggable, TweenLite]; // eslint-disable-line no-u
       })
 
       function selectCompanions (draggedObject) {
-        var companionsAll = $('#' + draggedObject.target.nearestViewportElement.id + ' .' + draggedObject.target.classList[0]) // todo: check whether this selects only in the current visualisation
+        // todo: support companion groups to move multiple nodes (e.g. same modularity group) at once
+        // identifying groups:
+        // var nodeGroups = {}
+        // $('#nodes circle').each(function () {
+
+        //   if (!nodeGroups[$(this).attr('fill')]) {
+        //     nodeGroups[$(this).attr('fill')] = []
+        //   } else {
+        //     nodeGroups[$(this).attr('fill')].push($(this).attr('class'))
+        //   }
+
+        // })
+        var companionsAll = $('#' + draggedObject.target.nearestViewportElement.id + ' .' + draggedObject.target.classList[0])
         var i = companionsAll.length
         var companions = []
         while (--i > -1) {
@@ -7479,7 +7483,7 @@ var GSAPplugins = [CSSPlugin, Draggable, TweenLite]; // eslint-disable-line no-u
         })
       }
 
-      Draggable.create('circle', { // todo: circle dragging doesn't work correctly if previously dragged by label. Attempted fix by saving offset in data-
+      Draggable.create('circle', {
         // bounds: $('#' + this.id).parent(), // fix: doesn't work with multiple visualisations
         onDrag: function () {
           var target = this.target

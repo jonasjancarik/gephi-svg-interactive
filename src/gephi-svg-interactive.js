@@ -24,7 +24,7 @@ var GSAPplugins = [CSSPlugin, Draggable, TweenLite]; // eslint-disable-line no-u
       // apply defaults where options were not set
       Object.keys(optionsDefault).forEach(function (option) {
         if (!options[option]) {
-          options.option = optionsDefault[option]
+          options[option] = optionsDefault[option]
         }
       })
 
