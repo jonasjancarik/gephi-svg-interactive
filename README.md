@@ -17,7 +17,7 @@ $(yourSvgElement).gephiSvgInteractive({
 })
 ```
 
-See [`demo/index.html`](https://github.com/jonasjancarik/gephi-svg-interactive/blob/master/demo/index.html) [(web view)](https://jonasjancarik.eu/gephi-svg-interactive/demo/) for an example.
+See [`demo/index.html`](https://github.com/jonasjancarik/gephi-svg-interactive/blob/master/demo/index.html) [(web view)](https://gephi-svg-interactive.netlify.com/) for an example.
 
 ### Build
 
