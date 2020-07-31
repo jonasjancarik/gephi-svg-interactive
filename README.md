@@ -5,9 +5,7 @@ Adds interactivity to Gephi-created SVGs in the browser.
 
 ### How To Use
 
-Include `dist/gephi-svg-interactive.js` or the minified version `dist/gephi-svg-interactive.min.js`.
-
-CDN and NPM support is coming.
+Include `dist/gephi-svg-interactive.js` or the minified version `dist/gephi-svg-interactive.min.js`. (CDN or NPM support is not currently available.)
 
 Your SVGs have to be inlined before `gephiSvgInteractive()` can be used on them. You can use e.g. [SVGInjector](https://github.com/iconic/SVGInjector/) to inline SVGs in your HTML.
 
