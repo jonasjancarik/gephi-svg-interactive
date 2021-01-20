@@ -31,7 +31,7 @@
     "watch": "npm-watch"
   },
   "dependencies": {
-    "gsap": "^2.0.1",
+    "gsap": "^3.6.0",
     "jquery": "^3.3.1"
   },
   "browserify": {
